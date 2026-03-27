@@ -72,57 +72,6 @@ export BUT_ADMIN_PASSWORD='change-this-password'
 python main.py
 ```
 
----
-
-## 공개(Public) 전 보안 체크리스트
-
-- [ ] `BUT_ADMIN_PASSWORD` 설정 완료
-- [ ] OAuth JSON / token 파일이 Git에 커밋되지 않았는지 확인
-- [ ] 필요 시 Git 히스토리 민감정보 스캔 수행
-- [ ] Google Drive 폴더 권한 최소화(필요한 계정만 접근)
-
-`.gitignore`에는 아래 민감 파일 패턴이 포함되어 있습니다.
-
-- `*.googleusercontent.*.json`
-- `client_secret*.json`
-- `credentials*.json`
-- `secrets*.json`
-- `token.json`
-- `token.pickle`
-
----
-
-## 프로젝트 구조
-
-- `main.py` - 메인 UI/녹화 흐름 제어
-- `settings.py` - 설정 UI 및 비밀번호 검증
-- `obsController.py` - OBS WebSocket 제어
-- `googleController.py` - Google Drive 인증/업로드
-- `QRController.py` - QR 생성/표시
-- `usage.py` - 사용법 다이얼로그
-
----
-
-## 트러블슈팅
-
-### 1) OBS 연결 실패
-
-- OBS WebSocket 활성화 여부 확인
-- 포트(기본 4455), 비밀번호 일치 여부 확인
-
-### 2) Google 인증 실패
-
-- OAuth client JSON 경로가 올바른지 확인
-- 브라우저 인증 절차 완료 여부 확인
-- 토큰 파일 권한 확인
-
-### 3) 업로드는 되는데 다운로드가 안 됨
-
-- 업로드된 파일의 Drive 공유 권한 확인
-- 사용 중인 링크 정책(조직/외부 공유 제한) 확인
-
----
-
 ## 라이선스
 
 MIT License. 자세한 내용은 [LICENSE](LICENSE) 파일을 참고하세요.
