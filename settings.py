@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                              QButtonGroup, QFormLayout, QMessageBox, QFileDialog)
 from PyQt6.QtCore import Qt, pyqtSignal, QSettings
 import os
+import hmac
 
 
 class PasswordDialog(QDialog):
@@ -38,13 +39,30 @@ class PasswordDialog(QDialog):
         self.setLayout(layout)
         
     def verify_password(self):
-        # 여기에 실제 비밀번호 확인 로직을 구현하세요
-        # 현재는 임시로 "1234"로 설정
-        if self.password_input.text() == "1234":
+        expected_password = self._load_expected_password()
+        if not expected_password:
+            QMessageBox.critical(
+                self,
+                "보안 설정 필요",
+                "관리자 비밀번호가 설정되지 않았습니다.\n"
+                "환경 변수 BUT_ADMIN_PASSWORD 또는 설정의 관리자 비밀번호를 지정해주세요."
+            )
+            return
+
+        if hmac.compare_digest(self.password_input.text(), expected_password):
             self.accept()
         else:
             QMessageBox.warning(self, "오류", "비밀번호가 일치하지 않습니다.")
             self.password_input.clear()
+
+    @staticmethod
+    def _load_expected_password():
+        env_password = os.getenv("BUT_ADMIN_PASSWORD", "").strip()
+        if env_password:
+            return env_password
+
+        settings = QSettings("BUT", "config")
+        return settings.value("admin_password", "").strip()
 
 class SettingsDialog(QDialog):
     # 설정 변경 시그널 추가
@@ -115,10 +133,16 @@ class SettingsDialog(QDialog):
         self.window_height.setRange(100, 1080)
         self.window_height.setValue(380)  # 기본값 380
         self.window_height.setSuffix(" px")
+
+        # 7. 관리자 비밀번호
+        self.admin_password = QLineEdit()
+        self.admin_password.setEchoMode(QLineEdit.EchoMode.Password)
+        self.admin_password.setPlaceholderText("환경 변수 BUT_ADMIN_PASSWORD 사용 권장")
         
         form_layout.addRow("새로고침 시간:", self.refresh_time)
         form_layout.addRow("최대 동영상 촬영 시간:", self.max_video_time)
         form_layout.addRow("창 높이:", self.window_height)
+        form_layout.addRow("관리자 비밀번호:", self.admin_password)
 
         # 설정 변경 시 시그널 연결
         self.landscape_radio.toggled.connect(self.update_preview)
@@ -163,7 +187,8 @@ class SettingsDialog(QDialog):
             "refresh_time": 30,
             "max_video_time": 60,
             "window_height": 380,
-            "google_api_file": ""
+            "google_api_file": "",
+            "admin_password": ""
         }
 
         # 설정값 저장
@@ -213,6 +238,7 @@ class SettingsDialog(QDialog):
         # Google API 경로 복원
         self.google_api_path.clear()
         self.google_api_path.setText(settings.value("google_api_file", ""))
+        self.admin_password.setText(settings.value("admin_password", ""))
 
 
 
@@ -227,7 +253,8 @@ class SettingsDialog(QDialog):
             'max_video_time': self.max_video_time.value(),
             'window_height': self.window_height.value(),
             'google_api_file': google_api_file,
-            'google_api_folder_path': os.path.dirname(google_api_file)
+            'google_api_folder_path': os.path.dirname(google_api_file),
+            'admin_password': self.admin_password.text()
         }
 
     
