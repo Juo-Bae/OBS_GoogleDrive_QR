@@ -16,5 +16,8 @@ dist/
 *.log.*.*.*
 
 *.googleusercontent.*.json
+client_secret*.json
+credentials*.json
+secrets*.json
 token.pickle
 token.json
